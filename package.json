@@ -1,6 +1,6 @@
 {
   "name": "@nimasfl/nest-minio",
-  "version": "1.1.4",
+  "version": "1.1.5",
   "description": "nest minio module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
