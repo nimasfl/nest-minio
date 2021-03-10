@@ -1,24 +1,24 @@
 import { Injectable, Logger, BadRequestException } from "@nestjs/common";
 import { promisify } from "util";
 import { Response } from "express";
-import { MinioService as ClientService } from "nestjs-minio-client";
+import { MinioService } from "nestjs-minio-client";
 import { BufferedFile } from "./types/file.model";
 import * as crypto from "crypto";
 
 @Injectable()
-export class MinioService {
+export class FileService {
   private readonly logger: Logger;
   private readonly makeBucket;
   private readonly bucketExists;
   private readonly putObject;
   private readonly removeObject;
 
-  constructor(private readonly minio: ClientService) {
+  constructor(private readonly minioService: MinioService) {
     this.logger = new Logger("MinioStorageService");
-    this.makeBucket = promisify(this.minio.client.makeBucket);
-    this.bucketExists = promisify(this.minio.client.bucketExists);
-    this.putObject = promisify(this.minio.client.putObject);
-    this.removeObject = promisify(this.minio.client.removeObject);
+    this.makeBucket = promisify(this.minioService.client.makeBucket);
+    this.bucketExists = promisify(this.minioService.client.bucketExists);
+    this.putObject = promisify(this.minioService.client.putObject);
+    this.removeObject = promisify(this.minioService.client.removeObject);
   }
 
   private static getExtension(file: BufferedFile) {
@@ -46,7 +46,7 @@ export class MinioService {
       .createHash("md5")
       .update(timestamp)
       .digest("hex");
-    const ext = MinioService.getExtension(file);
+    const ext = FileService.getExtension(file);
     const metaData = {
       "Content-Type": file.mimetype,
       "X-Amz-Meta-Testing": 1234,
@@ -64,16 +64,16 @@ export class MinioService {
   }
 
   async delete(objetName: string, bucket: string) {
-    this.minio.client.removeObject(bucket, objetName).catch((err) => {
+    this.minioService.client.removeObject(bucket, objetName).catch((err) => {
       this.logger.error(err.message, err.stack);
       throw new BadRequestException("failed to delete file");
     });
   }
 
   async get(url: string, res: Response) {
-    const bucket = MinioService.getBucket(url);
-    const fileName = MinioService.getFileName(url);
-    this.minio.client.getObject(bucket, fileName, (err, dataStream) => {
+    const bucket = FileService.getBucket(url);
+    const fileName = FileService.getFileName(url);
+    this.minioService.client.getObject(bucket, fileName, (err, dataStream) => {
       if (err) {
         this.logger.error(err.message, err.stack);
         throw new BadRequestException("failed to fetch file");

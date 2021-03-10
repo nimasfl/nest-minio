@@ -1,16 +1,16 @@
 import { Module, DynamicModule, Global } from "@nestjs/common";
-import { MinioService } from "./minio.service";
-import { MinioModule as ClientModule } from "nestjs-minio-client";
+import { FileService } from "./file.service";
+import { MinioModule } from "nestjs-minio-client";
 import { MinioConfigInterface } from "./types/minio.config.interface";
 
 @Global()
 @Module({})
-export class MinioModule {
+export class FileModule {
   static register(minioConfig: MinioConfigInterface): DynamicModule {
     return {
-      module: MinioModule,
+      module: FileModule,
       imports: [
-        ClientModule.register({
+        MinioModule.register({
           endPoint: minioConfig.endPoint,
           port: minioConfig.port,
           useSSL: minioConfig.useSSL,
@@ -18,9 +18,8 @@ export class MinioModule {
           secretKey: minioConfig.secretKey,
         }),
       ],
-      providers: [MinioService, ClientModule],
-      controllers: [],
-      exports: [MinioService],
+      providers: [FileService],
+      exports: [FileService],
     };
   }
 }
