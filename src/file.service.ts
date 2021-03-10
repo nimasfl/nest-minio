@@ -53,12 +53,16 @@ export class FileService {
     };
     const fileName = hashedFileName + ext;
     const fileBuffer = file.buffer;
-    await this.minioService.client.putObject(
+    this.minioService.client.putObject(
       bucket,
       fileName,
       fileBuffer,
-      metaData
+      metaData,
+      function (err) {
+        if (err) throw new BadRequestException("Error uploading file");
+      }
     );
+
     return { url: `/${bucket}/${fileName}` };
   }
 
