@@ -18,19 +18,9 @@ export class MinioModule {
           secretKey: minioConfig.secretKey,
         }),
       ],
-      providers: [
-        {
-          provide: MinioService,
-          useClass: MinioService,
-        },
-      ],
+      providers: [MinioService, ClientModule],
       controllers: [],
-      exports: [
-        {
-          provide: MinioService,
-          useClass: MinioService,
-        },
-      ],
+      exports: [MinioService],
     };
   }
 }
