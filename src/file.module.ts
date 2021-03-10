@@ -1,7 +1,7 @@
-import { Module, DynamicModule, Global } from "@nestjs/common";
-import { FileService } from "./file.service";
-import { MinioModule } from "nestjs-minio-client";
-import { MinioConfigInterface } from "./types/minio.config.interface";
+import { Module, DynamicModule, Global } from '@nestjs/common';
+import { FileService } from './file.service';
+import { MinioModule } from 'nestjs-minio-client';
+import { MinioConfigInterface } from './types/minio.config.interface';
 
 @Global()
 @Module({})
