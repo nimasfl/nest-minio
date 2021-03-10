@@ -1,8 +1,9 @@
-import { Module, DynamicModule } from "@nestjs/common";
+import { Module, DynamicModule, Global } from "@nestjs/common";
 import { MinioService } from "./minio.service";
 import { MinioModule as ClientModule } from "nestjs-minio-client";
 import { MinioConfigInterface } from "./types/minio.config.interface";
 
+@Global()
 @Module({})
 export class MinioModule {
   static register(minioConfig: MinioConfigInterface): DynamicModule {
@@ -17,9 +18,19 @@ export class MinioModule {
           secretKey: minioConfig.secretKey,
         }),
       ],
-      providers: [MinioService],
+      providers: [
+        {
+          provide: MinioService,
+          useClass: MinioService,
+        },
+      ],
       controllers: [],
-      exports: [MinioService],
+      exports: [
+        {
+          provide: MinioService,
+          useClass: MinioService,
+        },
+      ],
     };
   }
 }
