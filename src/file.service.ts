@@ -53,14 +53,13 @@ export class FileService {
     };
     const fileName = hashedFileName + ext;
     const fileBuffer = file.buffer;
-    return this.putObject(bucket, fileName, fileBuffer, metaData)
-      .then(() => {
-        return { url: "/" + bucket + "/" + fileName };
-      })
-      .catch((err) => {
-        this.logger.error(err.message, err.stack);
-        throw new BadRequestException("failed to upload file");
-      });
+    await this.minioService.client.putObject(
+      bucket,
+      fileName,
+      fileBuffer,
+      metaData
+    );
+    return { url: `/${bucket}/${fileName}` };
   }
 
   async delete(objetName: string, bucket: string) {
