@@ -1,2 +1,2 @@
-export * from "./minio.module";
+export * from "./file.module";
 export * from "./file.service";
