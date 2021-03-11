@@ -9,30 +9,31 @@ import {
 } from '@nestjs/common';
 import { Response } from 'express';
 import * as crypto from 'crypto';
-import * as Minio from 'minio';
-import { MinioConfig } from './types/minio.config.type';
+import { ClientOptions, Client } from 'minio';
 import { BufferedFile } from './types/buffered-file.interface';
 import { DeleteFileResponse, UploadFileResponse } from './types/response.dto';
 import { IMinioService } from './types/minio-service.interface';
-import { MinioOptions } from './types/minio.options.type';
+import { MinioOptions } from './types/minio.options';
 import { IUploadValidator } from './types/upload-validator.interface';
+import { MINIO_CONFIG, MINIO_OPTIONS } from "./types/constants";
 
 @Injectable()
 export class MinioService implements IMinioService {
   //region [ Constructor ]
   private readonly logger: Logger;
-  private readonly service: Minio.Client;
+  private readonly service: Client;
   private readonly directAccess: boolean = false;
   private readonly directPrefix: string;
+
   constructor(
-    @Inject('MINIO_CONFIG') private config: MinioConfig,
-    @Inject('MINIO_OPTIONS') private options: MinioOptions,
+    @Inject(MINIO_CONFIG) private minioConfig: ClientOptions,
+    @Inject(MINIO_OPTIONS)  private minioOptions: MinioOptions,
   ) {
-    if (this.options?.directAccessPrefix) {
+    if (this.minioOptions?.directAccessPrefix) {
       this.directAccess = true;
-      this.directPrefix = this.options?.directAccessPrefix;
+      this.directPrefix = this.minioOptions?.directAccessPrefix;
     }
-    this.service = new Minio.Client(this.config);
+    this.service = new Client(this.minioConfig);
     this.logger = new Logger('MinioStorageService');
   }
   //endregion
