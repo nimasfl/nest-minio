@@ -11,10 +11,10 @@ import { Response } from 'express';
 import * as crypto from 'crypto';
 import { ClientOptions, Client } from 'minio';
 import { BufferedFile } from './types/buffered-file.interface';
-import { DeleteFileResponse, UploadFileResponse } from './types/response.dto';
+import { DeleteFileResponse, UploadFileResponse } from './dto/response.dto';
 import { IMinioService } from './types/minio-service.interface';
 import { MinioOptions } from './types/minio.options';
-import { IUploadValidator } from './types/upload-validator.interface';
+import { UploadValidator } from './types/upload-validator.interface';
 import { MINIO_CONFIG, MINIO_OPTIONS } from "./types/constants";
 
 @Injectable()
@@ -26,8 +26,8 @@ export class MinioService implements IMinioService {
   private readonly directPrefix: string;
 
   constructor(
-    @Inject(MINIO_CONFIG) private minioConfig: ClientOptions,
-    @Inject(MINIO_OPTIONS)  private minioOptions: MinioOptions,
+     @Inject(MINIO_CONFIG) private minioConfig: ClientOptions,
+     @Inject(MINIO_OPTIONS) private minioOptions: MinioOptions,
   ) {
     if (this.minioOptions?.directAccessPrefix) {
       this.directAccess = true;
@@ -106,7 +106,7 @@ export class MinioService implements IMinioService {
   private async validateBeforeUpdate(
     file: BufferedFile,
     bucket: string,
-    validator: IUploadValidator,
+    validator: UploadValidator,
   ) {
     if (validator) {
       // MIME Validation
@@ -135,7 +135,7 @@ export class MinioService implements IMinioService {
   async upload(
     file: BufferedFile,
     bucket: string,
-    validator: IUploadValidator = null,
+    validator: UploadValidator = null,
   ): Promise<UploadFileResponse> {
     await this.validateBeforeUpdate(file, bucket, validator);
     const metaData = MinioService.getMetaData(file);

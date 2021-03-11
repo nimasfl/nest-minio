@@ -12,6 +12,7 @@ export class MinioModule {
     minioOptions: MinioOptions,
   ): DynamicModule {
     return {
+      global: true,
       module: MinioModule,
       providers: [
         { provide: MINIO_CONFIG, useValue: minioConfig },

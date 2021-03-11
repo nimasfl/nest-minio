@@ -2,7 +2,7 @@ export * from './minio.module';
 export * from './minio.service';
 export * from './types/minio.options';
 export * from './types/minio-mime-type.enum';
-export * from './types/response.dto';
+export * from './dto/response.dto';
 export * from './types/buffered-file.interface';
 export * from './decorators/api-file.decorator';
 export * from './decorators/api-many-file.decorator';

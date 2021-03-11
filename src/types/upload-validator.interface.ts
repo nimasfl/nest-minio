@@ -1,6 +1,6 @@
 import { MinioMimeType } from './minio-mime-type.enum';
 
-export interface IUploadValidator {
-  validMimes: MinioMimeType[];
-  maxSize: number;
+export class UploadValidator {
+  validMimes?: MinioMimeType[];
+  maxSize?: number;
 }

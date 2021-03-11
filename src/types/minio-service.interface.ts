@@ -1,5 +1,5 @@
 import { BufferedFile } from './buffered-file.interface';
-import { DeleteFileResponse, UploadFileResponse } from './response.dto';
+import { DeleteFileResponse, UploadFileResponse } from '..';
 import { Response } from 'express';
 
 export interface IMinioService {
