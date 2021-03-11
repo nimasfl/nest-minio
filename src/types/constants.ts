@@ -1,0 +1,2 @@
+export const MINIO_CONFIG = 'MINIO_CONFIG'
+export const MINIO_OPTIONS = 'MINIO_OPTIONS'

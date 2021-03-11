@@ -1,20 +1,21 @@
 import { Module, DynamicModule, Global } from '@nestjs/common';
+import {ClientOptions } from 'minio';
 import { MinioService } from './minio.service';
-import { MinioConfig } from './types/minio.config.type';
-import { MinioOptions } from './types/minio.options.type';
+import { MinioOptions } from './types/minio.options';
+import {MINIO_CONFIG, MINIO_OPTIONS} from "./types/constants";
 
 @Global()
 @Module({})
 export class MinioModule {
   static register(
-    minioConfig: MinioConfig,
-    minioOptions: MinioOptions = null,
+    minioConfig: ClientOptions,
+    minioOptions: MinioOptions,
   ): DynamicModule {
     return {
       module: MinioModule,
       providers: [
-        { provide: 'MINIO_CONFIG', useValue: minioConfig },
-        { provide: 'MINIO_OPTIONS', useValue: minioOptions },
+        { provide: MINIO_CONFIG, useValue: minioConfig },
+        { provide: MINIO_OPTIONS, useValue: minioOptions },
         MinioService,
       ],
       exports: [MinioService],
