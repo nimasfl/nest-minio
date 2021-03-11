@@ -1,13 +1,4 @@
-export interface BufferedFile {
-  fieldname: string;
-  originalname: string;
-  encoding: string;
-  mimetype: AppMimeType;
-  size: number;
-  buffer: Buffer | string;
-}
-
-export enum AppMimeType {
+export enum MinioMimeType {
   PNG = 'image/png',
   JPEG = 'image/jpeg',
   AVI = 'video/x-msvideo',

@@ -1,20 +1,15 @@
-export class IsFileDeleted {
+export class DeleteFileResponse {
   constructor(isFileDeleted: boolean) {
     this.isFileDeleted = isFileDeleted;
   }
   isFileDeleted: boolean;
 }
 
-export class IsFileUploaded {
-  constructor(isFileUploaded: boolean) {
-    this.isFileUploaded = isFileUploaded;
-  }
-  isFileUploaded: boolean;
-}
-
-export class FileUrl {
+export class UploadFileResponse {
   constructor(url: string) {
+    this.isFileUploaded = true;
     this.url = url;
   }
+  isFileUploaded: boolean;
   url: string;
 }
