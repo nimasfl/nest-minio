@@ -73,6 +73,7 @@ export class MinioService implements IMinioService {
   private getFileName(
     fileName: string,
     bucketValidator: string,
+    res: Response,
   ): { fileName: string; bucketName: string } {
     // remove base url if exists
     if (this.directAccess) {
@@ -85,8 +86,11 @@ export class MinioService implements IMinioService {
     if (bucketValidator && bucketValidator !== realBucketName) {
       this.logger.error('Bucket names does not match.');
       this.logger.error(
-        `Real Bucket: ${realBucketName} | Bucket Validator: ${bucketValidator}`,
+        `Sent Bucket: ${realBucketName} | Bucket Validator: ${bucketValidator}`,
       );
+      if (res) {
+        res.setHeader('Content-Type', 'application/json');
+      }
       throw new NotFoundException(`file ${fileName} not found`);
     }
     return { fileName: realFileName, bucketName: realBucketName };
@@ -156,7 +160,7 @@ export class MinioService implements IMinioService {
     path: string,
     bucketValidator: string,
   ): Promise<DeleteFileResponse> {
-    const { fileName, bucketName } = this.getFileName(path, bucketValidator);
+    const { fileName, bucketName } = this.getFileName(path, bucketValidator, null);
     await this.service.removeObject(bucketName, fileName);
     return new DeleteFileResponse(true);
   }
@@ -166,11 +170,13 @@ export class MinioService implements IMinioService {
     path: string,
     bucketValidator: string = null,
   ): Promise<void> {
-    const { fileName, bucketName } = this.getFileName(path, bucketValidator);
+    const { fileName, bucketName } = this.getFileName(path, bucketValidator, res);
     try {
       const data = await this.service.getObject(bucketName, fileName);
       data.pipe(res);
     } catch (e) {
+      this.logger.error(e.message);
+      res.setHeader('Content-Type', 'application/json');
       throw new NotFoundException(`file ${path} not found`);
     }
   }
