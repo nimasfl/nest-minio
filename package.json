@@ -1,6 +1,6 @@
 {
   "name": "@nimasfl/nest-minio",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "description": "nest minio module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -33,9 +33,7 @@
     "rxjs": "^6.6.6"
   },
   "dependencies": {
-    "minio": "^7.0.18"
-  },
-  "devDependencies": {
+    "minio": "^7.0.18",
     "@types/minio": "^7.0.7",
     "@types/multer": "^1.4.5"
   }
