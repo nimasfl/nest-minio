@@ -9,7 +9,7 @@ import {MINIO_CONFIG, MINIO_OPTIONS} from "./types/constants";
 export class MinioModule {
   static register(
     minioConfig: ClientOptions,
-    minioOptions: MinioOptions,
+    minioOptions: MinioOptions = null,
   ): DynamicModule {
     return {
       global: true,
