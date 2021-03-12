@@ -6,6 +6,7 @@ import {
   NotFoundException,
   UnsupportedMediaTypeException,
   PayloadTooLargeException,
+  BadRequestException
 } from '@nestjs/common';
 import { Response } from 'express';
 import * as crypto from 'crypto';
@@ -141,6 +142,9 @@ export class MinioService implements IMinioService {
     bucket: string,
     validator: UploadValidator = null,
   ): Promise<UploadFileResponse> {
+    if (!file) {
+      throw new BadRequestException('file cannot be empty')
+    }
     await this.validateBeforeUpdate(file, bucket, validator);
     const metaData = MinioService.getMetaData(file);
     const fileName = MinioService.getRandomFileName(file);
