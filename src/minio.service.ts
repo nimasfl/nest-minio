@@ -6,7 +6,7 @@ import {
   NotFoundException,
   UnsupportedMediaTypeException,
   PayloadTooLargeException,
-  BadRequestException
+  BadRequestException,
 } from '@nestjs/common';
 import { Response } from 'express';
 import * as crypto from 'crypto';
@@ -16,7 +16,15 @@ import { DeleteFileResponse, UploadFileResponse } from './dto/response.dto';
 import { IMinioService } from './types/minio-service.interface';
 import { MinioOptions } from './types/minio.options';
 import { UploadValidator } from './types/upload-validator.interface';
-import { MINIO_CONFIG, MINIO_OPTIONS } from "./types/constants";
+import { MINIO_CONFIG, MINIO_OPTIONS } from './types/constants';
+import { MinioMimeType } from './types/minio-mime-type.enum';
+
+// Jimp (Image Processing) Imports :
+const Jimp = require('jimp');
+const JPEG = require('jpeg-js');
+const { promisify } = require('util');
+const baseDim = 1024;
+const readByJimp = promisify(Jimp.read);
 
 @Injectable()
 export class MinioService implements IMinioService {
@@ -27,8 +35,8 @@ export class MinioService implements IMinioService {
   private readonly directPrefix: string;
 
   constructor(
-     @Inject(MINIO_CONFIG) private minioConfig: ClientOptions,
-     @Inject(MINIO_OPTIONS) private minioOptions: MinioOptions,
+    @Inject(MINIO_CONFIG) private minioConfig: ClientOptions,
+    @Inject(MINIO_OPTIONS) private minioOptions: MinioOptions,
   ) {
     if (this.minioOptions?.directAccessPrefix) {
       this.directAccess = true;
@@ -41,10 +49,7 @@ export class MinioService implements IMinioService {
 
   //region [ Private Methods ]
   private static getExtension(file: BufferedFile) {
-    return file.originalname.substring(
-      file.originalname.lastIndexOf('.'),
-      file.originalname.length,
-    );
+    return file.originalname.substring(file.originalname.lastIndexOf('.'), file.originalname.length);
   }
   private static getBucket(url: string) {
     return url.substr(1, url.indexOf('/', 1) - 1);
@@ -86,9 +91,7 @@ export class MinioService implements IMinioService {
     // if bucket exists validate its name
     if (bucketValidator && bucketValidator !== realBucketName) {
       this.logger.error('Bucket names does not match.');
-      this.logger.error(
-        `Sent Bucket: ${realBucketName} | Bucket Validator: ${bucketValidator}`,
-      );
+      this.logger.error(`Sent Bucket: ${realBucketName} | Bucket Validator: ${bucketValidator}`);
       if (res) {
         res.setHeader('Content-Type', 'application/json');
       }
@@ -108,17 +111,11 @@ export class MinioService implements IMinioService {
     }
   }
 
-  private async validateBeforeUpdate(
-    file: BufferedFile,
-    bucket: string,
-    validator: UploadValidator,
-  ) {
+  private async validateBeforeUpdate(file: BufferedFile, bucket: string, validator: UploadValidator) {
     if (validator) {
       // MIME Validation
       if (validator.validMimes && validator.validMimes.length) {
-        const list = validator.validMimes.map((item) =>
-          item.toString().toLowerCase(),
-        );
+        const list = validator.validMimes.map((item) => item.toString().toLowerCase());
         if (!list.includes(file.mimetype.toLowerCase())) {
           throw new UnsupportedMediaTypeException();
         }
@@ -126,9 +123,7 @@ export class MinioService implements IMinioService {
       // Size Validation
       if (validator.maxSize) {
         if (validator.maxSize * 1000 < file.size) {
-          throw new PayloadTooLargeException(
-            `maximum size is set to ${validator.maxSize} kilobytes`,
-          );
+          throw new PayloadTooLargeException(`maximum size is set to ${validator.maxSize} kilobytes`);
         }
       }
     }
@@ -136,18 +131,21 @@ export class MinioService implements IMinioService {
   }
   //endregion
 
-  //region [ Public Methods ]
-  async upload(
-    file: BufferedFile,
-    bucket: string,
-    validator: UploadValidator = null,
-  ): Promise<UploadFileResponse> {
+  async upload(file: BufferedFile, bucket: string, validator?: UploadValidator): Promise<UploadFileResponse> {
     if (!file) {
-      throw new BadRequestException('file cannot be empty')
+      throw new BadRequestException('file cannot be empty');
     }
     await this.validateBeforeUpdate(file, bucket, validator);
+
+    if (this.minioOptions?.compression?.enable) return this.multipleUpload(file, bucket);
+    return this.singleUpload(file, bucket);
+  }
+
+  //region [ Public Methods ]
+  private async singleUpload(file: BufferedFile, bucket: string): Promise<UploadFileResponse> {
     const metaData = MinioService.getMetaData(file);
     const fileName = MinioService.getRandomFileName(file);
+
     return this.service
       .putObject(bucket, fileName, file.buffer, metaData)
       .then(() => {
@@ -160,20 +158,83 @@ export class MinioService implements IMinioService {
       .catch((err) => this.catchError(err));
   }
 
-  async delete(
-    path: string,
-    bucketValidator: string,
-  ): Promise<DeleteFileResponse> {
+  async multipleUpload(file: BufferedFile, bucket: string): Promise<UploadFileResponse> {
+    /* Jimp Operations Start */
+    Jimp.decoders['image/jpeg'] = (data) => JPEG.decode(data, { maxMemoryUsageInMB: 1024 });
+
+    // Original Pic
+    const originalBuffer = file.buffer;
+
+    const jimpImage = await readByJimp(file.buffer);
+
+    let height = jimpImage.getHeight();
+    let width = jimpImage.getWidth();
+
+    // Re-scaling Dims
+    if (height > 2000 || width > 2000) {
+      if (height > width) {
+        width = (baseDim / height) * width;
+        height = baseDim;
+      } else {
+        height = (baseDim / width) * height;
+        width = baseDim;
+      }
+    }
+
+    const uploadAllResponse = new UploadFileResponse();
+
+    const orgMetaData = MinioService.getMetaData(file);
+    const orgFileName = MinioService.getRandomFileName(file);
+
+    let mimeType;
+    switch (orgMetaData['Content-Type']) {
+      case 'image/jpg':
+        mimeType = Jimp.MIME_JPEG;
+        break;
+      case 'image/png':
+        mimeType = Jimp.MIME_PNG;
+        break;
+      case 'image/jpeg':
+        mimeType = Jimp.MIME_JPEG;
+    }
+
+    const largeFileName = orgFileName + '_RESIZED_LARGE_TEST';
+    const smallFileName = orgFileName + '_RESIZED_SMALL_TEST';
+
+    await this.service.putObject(bucket, orgFileName, originalBuffer);
+
+    // Resized medium quality pic
+    await jimpImage
+      .quality(50)
+      .resize(width, height)
+      .getBuffer(mimeType, async (err, img) => {
+        if (err) throw new InternalServerErrorException();
+        await this.service.putObject(bucket, largeFileName, img);
+      });
+
+    // highly-resized quality pic
+    await jimpImage
+      .quality(50)
+      .resize(256, 256)
+      .getBuffer(mimeType, async (err, img) => {
+        if (err) throw new InternalServerErrorException();
+        await this.service.putObject(bucket, smallFileName, img);
+      });
+    /* Jimp Operations Done */
+
+    uploadAllResponse.url = bucket + '/' + orgFileName;
+    uploadAllResponse.largeUrl = bucket + '/' + largeFileName;
+    uploadAllResponse.smallUrl = bucket + '/' + smallFileName;
+    return uploadAllResponse;
+  }
+
+  async delete(path: string, bucketValidator: string): Promise<DeleteFileResponse> {
     const { fileName, bucketName } = this.getFileName(path, bucketValidator, null);
     await this.service.removeObject(bucketName, fileName);
     return new DeleteFileResponse(true);
   }
 
-  async get(
-    res: Response,
-    path: string,
-    bucketValidator: string = null,
-  ): Promise<void> {
+  async get(res: Response, path: string, bucketValidator: string = null): Promise<void> {
     const { fileName, bucketName } = this.getFileName(path, bucketValidator, res);
     try {
       const data = await this.service.getObject(bucketName, fileName);

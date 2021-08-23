@@ -1,8 +1,8 @@
 import { Module, DynamicModule, Global } from '@nestjs/common';
-import {ClientOptions } from 'minio';
+import { ClientOptions } from 'minio';
 import { MinioService } from './minio.service';
 import { MinioOptions } from './types/minio.options';
-import {MINIO_CONFIG, MINIO_OPTIONS} from "./types/constants";
+import { MINIO_CONFIG, MINIO_OPTIONS } from './types/constants';
 
 @Global()
 @Module({})
