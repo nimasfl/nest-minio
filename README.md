@@ -1,5 +1,5 @@
 # Nest Minio Module
-This package developed to handle minio requests in nestjs application as easy as possible. 
+This package developed to handle minio requests in nestjs application as easy as possible.
 
 ## Installation
 Install the package:
@@ -24,8 +24,16 @@ First you should register the module in your main module for example `app.module
         secretKey: process.env.MINIO_SECRET_KEY,
         useSSL: false,
       },
-      { 
-        directAccessPrefix: 'http://localhost:9000' // OPTIONAL 
+      {
+        directAccessPrefix: 'http://localhost:9000', // OPTIONAL
+        compression: {
+          enabled: true,
+          original: true,
+          medium: true,
+          small: true,
+          smallSize: 128,
+          baseDim: 1024,
+        },
       },
     ),
   ],
@@ -33,10 +41,10 @@ First you should register the module in your main module for example `app.module
 ```
 
 `MinioModule` takes 2 arguments as input.
- 
+
 The first is the configuration which you can use `ClientOptions` interface from minio package to write a config file for this module.
 
-The second one is custom options which will be described in another section. 
+The second one is custom options which will be described in another section.
 
 Once you did last part you only need to inject `MinioService` class in your service files in order to make use of this module.
 ```typescript
@@ -56,7 +64,11 @@ All the configuration needed to startup this module, is referenced in [official 
 
 
 ### Options
-For now there is only one option that can be used in specific cases.
+For now we have directAccessPrefix and compression options.
+
+`directAccessPrefix` is for the scenario where you need absolute url of the file.
+
+`compression` only applies to `image/png` and `image/jpeg` mime types and you can also mention small size that you desired
 
 
 ####  directAccessPrefix
@@ -66,23 +78,27 @@ For example when using this module the response of upload method will be like
 ```json
 {
   "isFileUploaded": true,
-  "url": "http://localhost:9000/test/f4fc1cc1fa377f1b80176b64ccf92ff7.png"
+  "url": "http://localhost:9000/test/f4fc1cc1fa377f1b80176b64ccf92ff7.png",
+  "smallUrl": null,
+  "largeUrl": null
 }
 ```
-instead of 
+instead of
 ```json
 {
   "isFileUploaded": true,
-  "url": "/test/f4fc1cc1fa377f1b80176b64ccf92ff7.png"
+  "url": "/test/f4fc1cc1fa377f1b80176b64ccf92ff7.png",
+  "smallUrl": null,
+  "largeUrl": null
 }
 ```
 Then you can use this stored url to the get method.
- 
- Whether you are using this option or not, any string that exists 
- in the url response of upload method can be used to fetch that file 
+
+ Whether you are using this option or not, any string that exists
+ in the url response of upload method can be used to fetch that file
  using the get method.
 
- 
+
 ### Using MinioService Methods
 
 following file is a controller file example that uses every method of this module.
@@ -115,7 +131,7 @@ export class FileUploadController {
   constructor(private minioService: MinioService) {}
 
   @Post()
-  // Upload decorator configures swagger and uses nest's interceptor to get the file by its name 
+  // Upload decorator configures swagger and uses nest's interceptor to get the file by its name
   @Upload('image')
   async uploadSingle(
     @UploadedFile() image: BufferedFile,
@@ -132,7 +148,7 @@ export class FileUploadController {
     @Param('fileName') fileName: string,
   ): Promise<DeleteFileResponse> {
     // Second argument of this method (bucketValidator) is optional.
-    // you can check whether if the requested file is in the required bucket or not. 
+    // you can check whether if the requested file is in the required bucket or not.
     return this.minioService.delete(fileName, 'testBucket');
   }
 
@@ -148,14 +164,14 @@ export class FileUploadController {
 
 ```
 
-Just remember in the `minioService.get()` method you need to pass the raw response 
+Just remember in the `minioService.get()` method you need to pass the raw response
 of the request (imported from `express`) to the method. So if you want to use `@Next` decorator
 in this controller, you should use it wisely as NestJS said in its docs:
 
-> Nest detects when the handler is using either @Res() or @Next(), 
-> indicating you have chosen the library-specific option. 
+> Nest detects when the handler is using either @Res() or @Next(),
+> indicating you have chosen the library-specific option.
 > If both approaches are used at the same time, the Standard approach is automatically disabled
-> for this single route and will no longer work as expected. 
+> for this single route and will no longer work as expected.
 > To use both approaches at the same time (for example, by injecting the response object
 > to only set cookies/headers but still leave the rest to the framework),
 > you must set the passthrough option to true in the @Res({ passthrough: true }) decorator.
