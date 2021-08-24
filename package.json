@@ -38,5 +38,8 @@
     "jimp": "^0.16.1",
     "jpeg-js": "^0.4.3",
     "minio": "^7.0.18"
+  },
+  "devDependencies": {
+    "prettier": "^2.3.2"
   }
 }
