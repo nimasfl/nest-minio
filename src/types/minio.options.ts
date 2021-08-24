@@ -6,4 +6,12 @@ export class MinioOptions {
    * http://minio.example.com:9000
    */
   directAccessPrefix: string;
+  compression?: CompressionType;
+}
+
+export interface CompressionType {
+  enable: boolean;
+  originalPic: boolean;
+  mediumSize: boolean;
+  smallSize: boolean;
 }

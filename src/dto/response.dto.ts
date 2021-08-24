@@ -6,10 +6,14 @@ export class DeleteFileResponse {
 }
 
 export class UploadFileResponse {
-  constructor(url: string) {
+  constructor(url?: string, largeUrl?: string, smallUrl?: string) {
     this.isFileUploaded = true;
     this.url = url;
+    this.smallUrl = smallUrl;
+    this.largeUrl = largeUrl;
   }
   isFileUploaded: boolean;
-  url: string;
+  url?: string;
+  smallUrl?: string;
+  largeUrl?: string;
 }

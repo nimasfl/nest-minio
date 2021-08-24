@@ -33,8 +33,10 @@
     "rxjs": "^6.6.6"
   },
   "dependencies": {
-    "minio": "^7.0.18",
     "@types/minio": "^7.0.7",
-    "@types/multer": "^1.4.5"
+    "@types/multer": "^1.4.5",
+    "jimp": "^0.16.1",
+    "jpeg-js": "^0.4.3",
+    "minio": "^7.0.18"
   }
 }
