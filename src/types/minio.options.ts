@@ -9,11 +9,11 @@ export class MinioOptions {
   compression?: CompressionType;
 }
 
-export class CompressionType {
+export interface CompressionType {
   enable: boolean;
   original: boolean;
   large: boolean;
   small: boolean;
-  smallSize?: number = 128;
-  baseDim?: number = 1024;
+  smallSize?: number;
+  baseDim?: number;
 }

@@ -40,6 +40,12 @@ export class MinioService implements IMinioService {
       this.directAccess = true;
       this.directPrefix = this.minioOptions?.directAccessPrefix;
     }
+    if (this.minioOptions?.compression) {
+      this.minioOptions.compression.baseDim =
+        this.minioOptions.compression.baseDim || 1024;
+      this.minioOptions.compression.smallSize =
+        this.minioOptions.compression.smallSize || 128;
+    }
     this.service = new Client(this.minioConfig);
     this.logger = new Logger('MinioStorageService');
   }
@@ -251,7 +257,10 @@ export class MinioService implements IMinioService {
       throw new BadRequestException('file cannot be empty');
     }
     await this.validateBeforeUpdate(file, bucket, validator);
-    const compressibleTypes = [Jimp.JPEG, Jimp.PNG];
+    const compressibleTypes = [
+      MinioMimeType.PNG.toString(),
+      MinioMimeType.JPEG.toString(),
+    ];
     if (
       this.minioOptions?.compression?.enable &&
       compressibleTypes.includes(file.mimetype)
