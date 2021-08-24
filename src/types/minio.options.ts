@@ -9,9 +9,11 @@ export class MinioOptions {
   compression?: CompressionType;
 }
 
-export interface CompressionType {
+export class CompressionType {
   enable: boolean;
-  originalPic: boolean;
-  mediumSize: boolean;
-  smallSize: boolean;
+  original: boolean;
+  medium: boolean;
+  small: boolean;
+  smallSize?: number = 128;
+  baseDim?: number = 1024;
 }
