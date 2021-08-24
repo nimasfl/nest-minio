@@ -257,10 +257,7 @@ export class MinioService implements IMinioService {
       throw new BadRequestException('file cannot be empty');
     }
     await this.validateBeforeUpdate(file, bucket, validator);
-    const compressibleTypes = [
-      MinioMimeType.PNG.toString(),
-      MinioMimeType.JPEG.toString(),
-    ];
+    const compressibleTypes: string[] = [MinioMimeType.PNG, MinioMimeType.JPEG];
     if (
       this.minioOptions?.compression?.enable &&
       compressibleTypes.includes(file.mimetype)
