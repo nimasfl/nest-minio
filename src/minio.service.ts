@@ -39,6 +39,12 @@ export class MinioService implements IMinioService {
     if (this.minioOptions?.directAccessPrefix) {
       this.directAccess = true;
       this.directPrefix = this.minioOptions?.directAccessPrefix;
+      if (this.directPrefix.substr(this.directPrefix.length - 1) === '/') {
+        this.directPrefix = this.directPrefix.substr(
+          0,
+          this.directPrefix.length - 1,
+        );
+      }
     }
     if (this.minioOptions?.compression) {
       this.minioOptions.compression.baseDim =
@@ -241,7 +247,7 @@ export class MinioService implements IMinioService {
   private makeUrl(bucket: string, fileName: string) {
     const url = '/' + bucket + '/' + fileName;
     if (this.directAccess && this.directPrefix.length) {
-      return (this.directPrefix + url).replace('//', '/');
+      return this.directPrefix + url;
     }
     return url;
   }
