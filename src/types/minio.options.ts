@@ -12,7 +12,7 @@ export class MinioOptions {
 export class CompressionType {
   enable: boolean;
   original: boolean;
-  medium: boolean;
+  large: boolean;
   small: boolean;
   smallSize?: number = 128;
   baseDim?: number = 1024;

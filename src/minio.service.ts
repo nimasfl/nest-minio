@@ -180,27 +180,35 @@ export class MinioService implements IMinioService {
     const largeFileName = this.addSuffixToFileName(fileName, '_lg');
     const smallFileName = this.addSuffixToFileName(fileName, '_sm');
 
-    await Promise.all([
-      this.service.putObject(bucket, fileName, originalBuffer),
-      jimpImage
+    if (this.minioOptions?.compression?.original) {
+      await this.service.putObject(bucket, fileName, originalBuffer);
+      uploadAllResponse.url = this.makeUrl(bucket, fileName);
+    }
+
+    if (this.minioOptions?.compression?.large) {
+      await jimpImage
         .quality(50)
         .resize(width, height)
         .getBuffer(mimeType, async (err, img) => {
-          if (err) throw new InternalServerErrorException();
+          if (err) throw new InternalServerErrorException(err);
           await this.service.putObject(bucket, largeFileName, img);
-        }),
-      jimpImage
-        .quality(50)
-        .resize(this.minioOptions.compression.smallSize, 128)
-        .getBuffer(mimeType, async (err, img) => {
-          if (err) throw new InternalServerErrorException();
-          await this.service.putObject(bucket, smallFileName, img);
-        }),
-    ]);
+        });
 
-    uploadAllResponse.url = this.makeUrl(bucket, fileName);
-    uploadAllResponse.largeUrl = this.makeUrl(bucket, largeFileName);
-    uploadAllResponse.smallUrl = this.makeUrl(bucket, smallFileName);
+      uploadAllResponse.largeUrl = this.makeUrl(bucket, largeFileName);
+    }
+
+    if (this.minioOptions?.compression?.small) {
+      const { smallSize } = this.minioOptions.compression;
+      await jimpImage
+        .quality(50)
+        .resize(smallSize, smallSize)
+        .getBuffer(mimeType, async (err, img) => {
+          if (err) throw new InternalServerErrorException(err);
+          await this.service.putObject(bucket, smallFileName, img);
+        });
+      uploadAllResponse.smallUrl = this.makeUrl(bucket, smallFileName);
+    }
+
     return uploadAllResponse;
   }
 
