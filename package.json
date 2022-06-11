@@ -1,6 +1,6 @@
 {
   "name": "@nimasfl/nest-minio",
-  "version": "2.0.6",
+  "version": "3.0.0",
   "description": "nest minio module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -24,13 +24,13 @@
   },
   "homepage": "https://github.com/nimasfl/nest-minio#readme",
   "peerDependencies": {
-    "@nestjs/common": "^7.5.1",
-    "@nestjs/core": "^7.5.1",
-    "@nestjs/platform-express": "^7.5.1",
-    "@nestjs/swagger": "^4.7.16",
-    "@types/node": "^14.14.33",
+    "@nestjs/common": "^8.0.0",
+    "@nestjs/core": "^8.0.0",
+    "@nestjs/platform-express": "^8.0.0",
+    "@nestjs/swagger": "^5.2.1",
+    "@types/node": "^16.0.0",
     "reflect-metadata": "^0.1.13",
-    "rxjs": "^6.6.6"
+    "rxjs": "^7.2.0"
   },
   "dependencies": {
     "@types/minio": "^7.0.7",
