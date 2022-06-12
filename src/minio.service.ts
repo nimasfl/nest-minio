@@ -27,8 +27,8 @@ const readByJimp = promisify(Jimp.read);
 @Injectable()
 export class MinioService implements IMinioService {
   //region [ Constructor ]
+  public readonly service: Client;
   private readonly logger: Logger;
-  private readonly service: Client;
   private readonly directAccess: boolean = false;
   private readonly directPrefix: string;
 
